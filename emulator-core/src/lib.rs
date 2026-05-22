@@ -10,3 +10,20 @@ pub struct chip8{
 	pub display: [u8;256],
 	pub key: [bool;16]	
 }
+
+impl chip8{
+	pub fn new()->Self{
+		Self{
+			ram: [0;4096],
+			generalPurposeRegister: [0;16],
+			addressIndexRegister: 0,
+			programCounter: 0x200,
+			stack: [0;16],
+			stackPoint: 0,
+			delayTimer: 0,
+			soundTimer: 0,
+			display: [0;256],
+			key: [false;16]	
+		}
+	}
+}
