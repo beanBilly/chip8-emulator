@@ -19,7 +19,7 @@ const fontSet: [u8;fontSetSize] = [
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 ];
 
-pub struct chip8{
+pub struct Chip8{
 	pub ram: [u8;4096],
 	pub generalPurposeRegister: [u8;16],
 	pub addressIndexRegister: u16,
@@ -32,7 +32,7 @@ pub struct chip8{
 	pub key: [bool;16]	
 }
 
-impl chip8{
+impl Chip8{
 	pub fn new()->Self{
 		let mut newRam= [0;4096];
 		
@@ -203,9 +203,9 @@ impl chip8{
 			
 			0xC=>{
 				//generate random 0-255, AND w kk, store x
-				use rand::Rng;
-				let mut rng = rand::thread_rng();
-				let random: u8 = rng.gen_range(0..=255);
+				use rand::prelude::*;
+				let mut rng = rand::rng();
+				let random: u8 = rng.random::<u8>();
 				self.generalPurposeRegister[x as usize]=kk&random;
 			}
 			

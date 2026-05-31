@@ -4,10 +4,10 @@ use std::fs::File;
 //allowing compiler to read the files
 use std::io::Read;
 //allowing compiler to access the chip8 architecture
-use emulator_core::chip8;
+use emulator_core::Chip8;
 fn main(){
 	  //creating chip emulator here
-	  let mut emulator = chip8::new();
+	  let mut emulator = Chip8::new();
 	  
 	  //given permission for compiler to read the hard drive, we are trying to read the file "pong.ch8) to load into the ROM
 	  let mut romFile = File::open("pong.ch8").expect("Failed to open ROM files");
@@ -21,7 +21,7 @@ fn main(){
 	  
 	  //initializing the property of our "OS" or visual application 
 	  let mut options = WindowOptions::default();
-	  options.scale = Scale::X10;
+	  options.scale = Scale::X16;
 	  
 	  let mut window = Window::new(
     		"CHIP-8 Emulator", // Title
