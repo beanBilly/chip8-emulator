@@ -40,6 +40,31 @@ fn main(){
 	
 	//game loop, run until window close or esc pressed
 	while window.is_open() && !window.is_key_down(Key::Escape) {
+                
+		//resetting all key map to false
+		emulator.key = [false; 16];
+
+		//check which key is held down when that frame runs
+		if window.is_key_down(Key::Key1) { emulator.key[0x1] = true; }
+		if window.is_key_down(Key::Key2) { emulator.key[0x2] = true; }
+		if window.is_key_down(Key::Key3) { emulator.key[0x3] = true; }
+		if window.is_key_down(Key::Key4) { emulator.key[0xC] = true; }
+
+		if window.is_key_down(Key::Q)    { emulator.key[0x4] = true; }
+		if window.is_key_down(Key::W)    { emulator.key[0x5] = true; }
+		if window.is_key_down(Key::E)    { emulator.key[0x6] = true; }
+		if window.is_key_down(Key::R)    { emulator.key[0xD] = true; }
+
+		if window.is_key_down(Key::A)    { emulator.key[0x7] = true; }
+		if window.is_key_down(Key::S)    { emulator.key[0x8] = true; }
+		if window.is_key_down(Key::D)    { emulator.key[0x9] = true; }
+		if window.is_key_down(Key::F)    { emulator.key[0xE] = true; }
+
+		if window.is_key_down(Key::Z)    { emulator.key[0xA] = true; }
+		if window.is_key_down(Key::X)    { emulator.key[0x0] = true; }
+		if window.is_key_down(Key::C)    { emulator.key[0xB] = true; }
+		if window.is_key_down(Key::V)    { emulator.key[0xF] = true; }
+		
 		//take opcode from the RAM,decode it, update the timer (for 1 of 60 fps)
 		let opcode = emulator.fetch();
 		emulator.decode(opcode);
@@ -59,6 +84,7 @@ fn main(){
             		.unwrap_or_else(|e| {
                 			panic!("Failed to update window buffer: {}", e);
                 			});
+
 	}
 
 	  
