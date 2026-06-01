@@ -66,8 +66,10 @@ fn main(){
 		if window.is_key_down(Key::V)    { emulator.key[0xF] = true; }
 		
 		//take opcode from the RAM,decode it, update the timer (for 1 of 60 fps)
-		let opcode = emulator.fetch();
-		emulator.decode(opcode);
+		for i in 0..10{
+			let opcode = emulator.fetch();
+			emulator.decode(opcode);		
+		}
 		emulator.updateTimer();
 		
 		//emulator's boolean screen into  u32 colour buffer
