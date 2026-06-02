@@ -168,6 +168,7 @@ impl Chip8{
 				}
 				else if n==0x6{
 					//save lowest bit to vf
+                    self.generalPurposeRegister[x as usize] = self.generalPurposeRegister[y as usize];
 					self.generalPurposeRegister[0xF] = self.generalPurposeRegister[x as usize] & 0x1;
 					self.generalPurposeRegister[x as usize] >>= 1;
 				}
@@ -303,12 +304,14 @@ impl Chip8{
 					for i in 0..=(x as usize){
 						self.ram[self.addressIndexRegister as usize + i]=self.generalPurposeRegister[i];
 					}
+					self.addressIndexRegister += (x + 1) as u16;
 				}
 				else if kk==0x65{
 					//load registers v0 through vx from memory
 					for i in 0..=(x as usize){
 						self.generalPurposeRegister[i]=self.ram[self.addressIndexRegister as usize + i];
 					}
+					self.addressIndexRegister += (x + 1) as u16;
 				}
 			}
 			_ => {} // Fallback for unimplemented outer opcodes

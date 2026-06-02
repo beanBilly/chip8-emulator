@@ -4,13 +4,19 @@ use std::fs::File;
 //allowing compiler to read the files
 use std::io::Read;
 //allowing compiler to access the chip8 architecture
+use rodio::{DeviceSinkBuilder, Player};
+//devicesinkbuilder opens the OS sound hardware, and player acts as the cassette player
+use rodio::source::{SineWave, Source};
+//sinewave is mathematical signal generator, course for filters like amplify() and repeat_infinite()
+use std::time::Duration;
+//sound timing
 use emulator_core::Chip8;
 fn main(){
 	  //creating chip emulator here
 	  let mut emulator = Chip8::new();
 	  
-	  //given permission for compiler to read the hard drive, we are trying to read the file "pong.ch8) to load into the ROM
-	  let mut romFile = File::open("pong.ch8").expect("Failed to open ROM files");
+	  //given permission for compiler to read the hard drive, we are trying to read the file "pong.ch8") to load into the ROM
+	  let mut romFile = File::open("spacejam.ch8").expect("Failed to open ROM files");
 	  //we using vector to load the game files dynamically to avoid wasting memory
 	  let mut romData = Vec::new();
 	  //read file to ROM
@@ -31,7 +37,21 @@ fn main(){
     		).unwrap_or_else(|e| { // closure function
     			panic!("Could not open window: {}", e); //when 
 			});
-			
+	
+	//connecting to physical speaker		
+	let handle = DeviceSinkBuilder::open_default_sink()
+        	.expect("Failed to open default audio stream");
+        //connect to sound card
+        let player = Player::connect_new(&handle.mixer());
+        
+        let source = SineWave::new(440.0)
+        	.amplify(0.15)
+        	.repeat_infinite();
+        	
+        player.append(source);
+        //std::thread::sleep(std::time::Duration::from_millis(50));
+        player.pause();
+        
 	//forced the host os to run only 60 frames per second, 166667 ms for each frame
 	window.limit_update_rate(Some(std::time::Duration::from_micros(16667)));
 	
@@ -67,10 +87,17 @@ fn main(){
 		
 		//take opcode from the RAM,decode it, update the timer (for 1 of 60 fps)
 		for i in 0..10{
-			let opcode = emulator.fetch();
-			emulator.decode(opcode);		
+		    let opcode = emulator.fetch();
+		    emulator.decode(opcode);
 		}
 		emulator.updateTimer();
+		
+		if emulator.soundTimer>0{
+			player.play();
+		}
+		else{
+			player.pause();
+		}
 		
 		//emulator's boolean screen into  u32 colour buffer
         	for i in 0..2048 {
