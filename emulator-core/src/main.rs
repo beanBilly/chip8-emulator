@@ -10,18 +10,27 @@ use rodio::source::{SineWave, Source};
 //sinewave is mathematical signal generator, course for filters like amplify() and repeat_infinite()
 use std::time::Duration;
 //sound timing
+use std::panic;
+//for debugging
 use emulator_core::Chip8;
 fn main(){
+	panic::set_hook(Box::new(|panic_info| {
+        eprintln!("{panic_info}");
+        std::process::exit(1);
+        }));
 	  //creating chip emulator here
 	  let mut emulator = Chip8::new();
 	  
 	  //given permission for compiler to read the hard drive, we are trying to read the file "pong.ch8") to load into the ROM
-	  let mut romFile = File::open("spacejam.ch8").expect("Failed to open ROM files");
+	  //let mut romFile = File::open("dodge.ch8").expect("Failed to open ROM files");
 	  //we using vector to load the game files dynamically to avoid wasting memory
-	  let mut romData = Vec::new();
+	  //let mut romData = Vec::new();
 	  //read file to ROM
-	  romFile.read_to_end(&mut romData).expect("Unable to load data to ROM");
-	  
+	  //romFile.read_to_end(&mut romData).expect("Unable to load data to ROM");
+	  	  
+let romData: Vec<u8> = vec![
+
+];
 	  //loading ROM data to RAM
 	  emulator.loadRom(&romData);
 	  
@@ -37,6 +46,7 @@ fn main(){
     		).unwrap_or_else(|e| { // closure function
     			panic!("Could not open window: {}", e); //when 
 			});
+
 	
 	//connecting to physical speaker		
 	let handle = DeviceSinkBuilder::open_default_sink()
@@ -91,7 +101,7 @@ fn main(){
 		    emulator.decode(opcode);
 		}
 		emulator.updateTimer();
-		
+	
 		if emulator.soundTimer>0{
 			player.play();
 		}

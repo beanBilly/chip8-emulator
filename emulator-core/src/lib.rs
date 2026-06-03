@@ -61,6 +61,7 @@ impl Chip8{
 	}
 	
 	pub fn fetch(&mut self)->u16{
+		self.programCounter &= 0x0FFF;  // ensure PC stays in 12-bit space
 		let lhsU8=self.ram[self.programCounter as usize];
 		let rhsU8=self.ram[(self.programCounter+1) as usize];
 		let mut opcodeU16: u16;
@@ -88,11 +89,12 @@ impl Chip8{
 				}	
 				//return from subroutine
 				else if kk==0xEE{
-					self.stackPoint-=1;
-					self.programCounter=self.stack[self.stackPoint as usize];
+				    if self.stackPoint > 0 {
+					self.stackPoint -= 1;
+					self.programCounter = self.stack[self.stackPoint as usize];
+				    }
 				}
 			}
-			
 			0x1=>{
 				//jump to nnn
 				self.programCounter=nnn;
@@ -100,10 +102,12 @@ impl Chip8{
 
 			0x2=>{
 				//call subroutine
-				self.stack[self.stackPoint as usize]=self.programCounter;
-				self.stackPoint+=1;
-				self.programCounter=nnn;
-				
+				    if (self.stackPoint as usize) < 16 {
+					self.stack[self.stackPoint as usize] = self.programCounter;
+					self.stackPoint += 1;
+				    }
+				    self.programCounter = nnn & 0xFFF;
+								
 			}
 			
 			0x3=>{
@@ -194,7 +198,7 @@ impl Chip8{
 			
 			0xA=>{
 				//load address index register
-				self.addressIndexRegister=nnn;
+				self.addressIndexRegister = nnn & 0xFFF; 
 			}
 
 			0xB=>{
@@ -239,6 +243,12 @@ impl Chip8{
 						}
 					} 
 				}
+				println!("DRAW: I={:04X}, X={}, Y={}, n={}",
+				    self.addressIndexRegister,
+				    self.generalPurposeRegister[x as usize],
+				    self.generalPurposeRegister[y as usize],
+				    n
+				);
 			}
 
 			0xE=>{
@@ -286,11 +296,11 @@ impl Chip8{
 				}
 				else if kk==0x1E{
 					//add vx to address index register
-					self.addressIndexRegister=self.addressIndexRegister.wrapping_add(self.generalPurposeRegister[x as usize] as u16);
+					self.addressIndexRegister = (self.addressIndexRegister.wrapping_add(self.generalPurposeRegister[x as usize] as u16)) & 0xFFF;
 				}
 				else if kk==0x29{
 					//set address index register to font sprite location for vx
-					self.addressIndexRegister=(self.generalPurposeRegister[x as usize] as u16)*5;
+					self.addressIndexRegister = ((self.generalPurposeRegister[x as usize] as u16) * 5) & 0xFFF;
 				}
 				else if kk==0x33{
 					//store bcd representation of vx in memory
