@@ -1,3 +1,224 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CHIP-8 Emulator @beanBilly</title>
+    <style>
+        body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 12px; box-sizing: border-box; }
+        header { text-align: center; margin-bottom: 16px; }
+        .github-profile { display: inline-flex; align-items: center; gap: 8px; color: #58a6ff; font-size: 1.8rem; font-weight: bold; text-decoration: none; letter-spacing: 1px; text-shadow: 0 0 15px rgba(88,166,255,0.3); transition: 0.2s; }
+        .github-profile:hover { color: #79c0ff; text-shadow: 0 0 25px rgba(88,166,255,0.6); }
+        .github-icon { fill: currentColor; width: 28px; height: 28px; }
+        .subtitle { color: #8b949e; margin: 6px 0 0 0; font-size: 0.9rem; }
+        
+        .controls-panel { margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; background: #161b22; padding: 10px 16px; border-radius: 8px; border: 1px solid #30363d; width: 100%; max-width: 600px; box-sizing: border-box; }
+        .control-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #8b949e; font-weight: 500; }
+        select { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 6px 12px; font-size: 0.95rem; cursor: pointer; font-weight: 600; outline: none; }
+        select:focus { border-color: #58a6ff; }
+        
+        .emulator-workspace { display: flex; flex-direction: row; align-items: stretch; gap: 16px; max-width: 1200px; width: 100%; justify-content: center; }
+        
+        .canvas-container { background: #161b22; padding: 8px; border-radius: 12px; border: 2px solid #30363d; box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 25px rgba(88,166,255,0.15); flex: 1; min-width: 0; max-width: 800px; box-sizing: border-box; }
+        canvas { display: block; background: #010409; border-radius: 6px; width: 100%; height: auto; aspect-ratio: 2 / 1; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+        .instructions-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; font-size: 1rem; color: #8b949e; min-width: 240px; max-width: 320px; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 10px; justify-content: center; }
+        .instructions-box strong { text-align: center; color: #c9d1d9; margin-bottom: 4px; display: block; font-size: 1.1rem; }
+
+        .control-row { margin: 0; display: flex; align-items: center; justify-content: space-between; background: #21262d; border: 1px solid #30363d; padding: 10px 16px; border-radius: 8px; color: #c9d1d9; font-weight: 500; cursor: pointer; user-select: none; box-shadow: 0 4px 0px #0d1117; transform: translateY(-2px); transition: transform 0.05s, box-shadow 0.05s; touch-action: manipulation; }
+        .control-row:active { transform: translateY(1px); box-shadow: 0 1px 0px #0d1117; background: #262c36; }
+        
+        .key-badge { color: #58a6ff; font-family: monospace; font-size: 1.2rem; font-weight: bold; background: #161b22; border: 1px solid #30363d; padding: 2px 10px; border-radius: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+
+        .btn-w { grid-area: btn-w; }
+        .btn-s { grid-area: btn-s; }
+        .btn-a { grid-area: btn-a; }
+        .btn-d { grid-area: btn-d; }
+        .btn-e { grid-area: btn-e; }
+
+        .credits-section { margin-top: 24px; max-width: 640px; width: 100%; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; box-sizing: border-box; }
+        h3 { color: #f0883e; margin: 0 0 8px 0; font-size: 1.1rem; }
+        p { font-size: 0.95rem; line-height: 1.5; color: #8b949e; margin: 0; }
+        a { color: #58a6ff; text-decoration: none; font-weight: 600; }
+        a:hover { text-decoration: underline; }
+
+        @media (max-width: 900px), (orientation: portrait) {
+            .emulator-workspace { flex-direction: column; align-items: center; }
+            .canvas-container { width: 100%; }
+            
+            .instructions-box { 
+                max-width: 400px; 
+                width: 100%; 
+                display: grid; 
+                grid-template-columns: 1fr 1.2fr 1fr;
+                grid-template-areas: 
+                    "title title title"
+                    ".     btn-w ."
+                    "btn-a btn-s btn-d"
+                    "btn-e btn-e btn-e";
+                gap: 12px; 
+                padding: 16px; 
+            }
+            .instructions-box strong { grid-column: 1 / -1; grid-area: title; margin-bottom: 4px; }
+            
+            .control-row { 
+                flex-direction: column; 
+                gap: 4px; 
+                text-align: center; 
+                padding: 12px 6px; 
+                font-size: 0.85rem; 
+                justify-content: center;
+            }
+            
+            .btn-e {
+                flex-direction: row !important;
+                gap: 8px;
+                padding: 14px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="https://github.com/beanBilly" target="_blank" rel="noopener noreferrer" class="github-profile">
+            <svg class="github-icon" viewBox="0 0 16 16"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82A7.48 7.48 0 0 0 8 2.84c-.68.006-1.36.09-2 .28-1.53-1.04-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+            @beanBilly
+        </a>
+        <p class="subtitle">CHIP-8 Emulator using Rust and WebAssembly</p>
+    </header>
+
+    <div class="controls-panel">
+        <div class="control-group">
+            <label for="game-select">Select ROM:</label>
+            <select id="game-select">
+                <option value="pong">Pong</option>
+                <option value="ghostEscape">Ghost Escape</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="color-select">Pixel Theme:</label>
+            <select id="color-select">
+                <option value="#f0883e">Retro Amber</option>
+                <option value="#58a6ff">GitHub Cyan</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="emulator-workspace">
+        <div class="canvas-container">
+            <canvas id="chip8-canvas" width="1024" height="512"></canvas>
+        </div>
+
+        <div class="instructions-box" id="game-instructions">
+            
+        </div>
+    </div>
+
+    <div class="credits-section">
+        <h3>Acknowledgments & Inspiration</h3>
+        <p>The game ROMs used here are sourced from the open-source libraries in <a href="https://johnearnest.github.io/chip8Archive/?sort=platform" target="_blank" rel="noopener noreferrer">CHIP-8 Archive</a> by <strong>John Earnest</strong>. Do check out their archive to discover original community games.</p>
+    </div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
+
+
+<!--
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHIP-8 Emulator @beanBilly</title>
+    <style>
+        body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 12px; box-sizing: border-box; }
+        header { text-align: center; margin-bottom: 16px; }
+        .github-profile { display: inline-flex; align-items: center; gap: 8px; color: #58a6ff; font-size: 1.8rem; font-weight: bold; text-decoration: none; letter-spacing: 1px; text-shadow: 0 0 15px rgba(88,166,255,0.3); transition: 0.2s; }
+        .github-profile:hover { color: #79c0ff; text-shadow: 0 0 25px rgba(88,166,255,0.6); }
+        .github-icon { fill: currentColor; width: 28px; height: 28px; }
+        .subtitle { color: #8b949e; margin: 6px 0 0 0; font-size: 0.9rem; }
+        
+        .controls-panel { margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; background: #161b22; padding: 10px 16px; border-radius: 8px; border: 1px solid #30363d; width: 100%; max-width: 600px; box-sizing: border-box; }
+        .control-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #8b949e; font-weight: 500; }
+        select { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 6px 12px; font-size: 0.95rem; cursor: pointer; font-weight: 600; outline: none; }
+        select:focus { border-color: #58a6ff; }
+        
+        .emulator-workspace { display: flex; flex-direction: row; align-items: stretch; gap: 16px; max-width: 1200px; width: 100%; justify-content: center; }
+        
+        .canvas-container { background: #161b22; padding: 8px; border-radius: 12px; border: 2px solid #30363d; box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 25px rgba(88,166,255,0.15); flex: 1; min-width: 0; max-width: 800px; box-sizing: border-box; }
+        canvas { display: block; background: #010409; border-radius: 6px; width: 100%; height: auto; aspect-ratio: 2 / 1; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+        .instructions-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; font-size: 1rem; color: #8b949e; min-width: 240px; max-width: 320px; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 10px; justify-content: center; }
+        .instructions-box strong { text-align: center; color: #c9d1d9; margin-bottom: 4px; display: block; font-size: 1.1rem; }
+
+        .control-row { margin: 0; display: flex; align-items: center; justify-content: space-between; background: #21262d; border: 1px solid #30363d; padding: 10px 16px; border-radius: 8px; color: #c9d1d9; font-weight: 500; cursor: pointer; user-select: none; box-shadow: 0 4px 0px #0d1117; transform: translateY(-2px); transition: transform 0.05s, box-shadow 0.05s; touch-action: manipulation; }
+        .control-row:active { transform: translateY(1px); box-shadow: 0 1px 0px #0d1117; background: #262c36; }
+        
+        .key-badge { color: #58a6ff; font-family: monospace; font-size: 1.2rem; font-weight: bold; background: #161b22; border: 1px solid #30363d; padding: 2px 10px; border-radius: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+
+        .credits-section { margin-top: 24px; max-width: 640px; width: 100%; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; box-sizing: border-box; }
+        h3 { color: #f0883e; margin: 0 0 8px 0; font-size: 1.1rem; }
+        p { font-size: 0.95rem; line-height: 1.5; color: #8b949e; margin: 0; }
+        a { color: #58a6ff; text-decoration: none; font-weight: 600; }
+        a:hover { text-decoration: underline; }
+
+        @media (max-width: 900px), (orientation: portrait) {
+            .emulator-workspace { flex-direction: column; align-items: center; }
+            .canvas-container { width: 100%; }
+            .instructions-box { max-width: 800px; width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 12px; }
+            .instructions-box strong { grid-column: 1 / -1; margin-bottom: 0; }
+            .control-row { flex-direction: column; gap: 6px; text-align: center; padding: 12px 8px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="https://github.com/beanBilly" target="_blank" rel="noopener noreferrer" class="github-profile">
+            <svg class="github-icon" viewBox="0 0 16 16"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82A7.48 7.48 0 0 0 8 2.84c-.68.006-1.36.09-2 .28-1.53-1.04-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+            @beanBilly
+        </a>
+        <p class="subtitle">CHIP-8 Emulator using Rust and WebAssembly</p>
+    </header>
+
+    <div class="controls-panel">
+        <div class="control-group">
+            <label for="game-select">Select ROM:</label>
+            <select id="game-select">
+                <option value="pong">Pong</option>
+                <option value="ghostEscape">Ghost Escape</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="color-select">Pixel Theme:</label>
+            <select id="color-select">
+                <option value="#f0883e">Retro Amber</option>
+                <option value="#58a6ff">GitHub Cyan</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="emulator-workspace">
+        <div class="canvas-container">
+            <canvas id="chip8-canvas" width="1024" height="512"></canvas>
+        </div>
+
+        <div class="instructions-box" id="game-instructions">
+            
+        </div>
+    </div>
+
+    <div class="credits-section">
+        <h3>Acknowledgments & Inspiration</h3>
+        <p>The game ROMs used here are sourced from the open-source libraries in <a href="https://johnearnest.github.io/chip8Archive/?sort=platform" target="_blank" rel="noopener noreferrer">CHIP-8 Archive</a> by <strong>John Earnest</strong>. Do check out their archive to discover original community games.</p>
+    </div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
+-->
+
+
+<!--
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,6 +306,7 @@
     <script type="module" src="index.js"></script>
 </body>
 </html>
+-->
 
 <!--
 <!DOCTYPE html>
