@@ -22,15 +22,17 @@ fn main(){
 	  let mut emulator = Chip8::new();
 	  
 	  //given permission for compiler to read the hard drive, we are trying to read the file "pong.ch8") to load into the ROM
-	  //let mut romFile = File::open("dodge.ch8").expect("Failed to open ROM files");
+	  let mut romFile = File::open("pong.ch8").expect("Failed to open ROM files");
 	  //we using vector to load the game files dynamically to avoid wasting memory
-	  //let mut romData = Vec::new();
+	  let mut romData = Vec::new();
 	  //read file to ROM
-	  //romFile.read_to_end(&mut romData).expect("Unable to load data to ROM");
-	  	  
+	  romFile.read_to_end(&mut romData).expect("Unable to load data to ROM");
+
+/*	  	  
 let romData: Vec<u8> = vec![
 
 ];
+*/
 	  //loading ROM data to RAM
 	  emulator.loadRom(&romData);
 	  
@@ -66,11 +68,32 @@ let romData: Vec<u8> = vec![
 	window.limit_update_rate(Some(std::time::Duration::from_micros(16667)));
 	
 	//creating the blank pixel buffer
-	let mut pixel_buffer = [0u32; 2048];
+	let mut pixelBuffer = [0u32; 2048];
 	
 	//game loop, run until window close or esc pressed
 	while window.is_open() && !window.is_key_down(Key::Escape) {
                 
+                emulator.set_key(0x1, window.is_key_down(Key::Key1));
+		emulator.set_key(0x2, window.is_key_down(Key::Key2));
+		emulator.set_key(0x3, window.is_key_down(Key::Key3));
+		emulator.set_key(0xC, window.is_key_down(Key::Key4));
+
+		emulator.set_key(0x4, window.is_key_down(Key::Q));
+		emulator.set_key(0x5, window.is_key_down(Key::W));
+		emulator.set_key(0x6, window.is_key_down(Key::E));
+		emulator.set_key(0xD, window.is_key_down(Key::R));
+
+		emulator.set_key(0x7, window.is_key_down(Key::A));
+		emulator.set_key(0x8, window.is_key_down(Key::S));
+		emulator.set_key(0x9, window.is_key_down(Key::D));
+		emulator.set_key(0xE, window.is_key_down(Key::F));
+
+		emulator.set_key(0xA, window.is_key_down(Key::Z));
+		emulator.set_key(0x0, window.is_key_down(Key::X));
+		emulator.set_key(0xB, window.is_key_down(Key::C));
+		emulator.set_key(0xF, window.is_key_down(Key::V));
+                
+                /* js cant access array of bool
 		//resetting all key map to false
 		emulator.key = [false; 16];
 
@@ -94,6 +117,7 @@ let romData: Vec<u8> = vec![
 		if window.is_key_down(Key::X)    { emulator.key[0x0] = true; }
 		if window.is_key_down(Key::C)    { emulator.key[0xB] = true; }
 		if window.is_key_down(Key::V)    { emulator.key[0xF] = true; }
+		*/
 		
 		//take opcode from the RAM,decode it, update the timer (for 1 of 60 fps)
 		for i in 0..10{
@@ -110,11 +134,12 @@ let romData: Vec<u8> = vec![
 		}
 		
 		//emulator's boolean screen into  u32 colour buffer
+		let displayData=emulator.getDisplay();
         	for i in 0..2048 {
-            		if emulator.display[i] == true {
-                		pixel_buffer[i] = 0xFFFFFF; // Bright White pixel
+            		if displayData[i] == true {
+                		pixelBuffer[i] = 0xFFFFFF; // Bright White pixel
             		} else {
-                		pixel_buffer[i] = 0x000000; // Pitch Black pixel
+                		pixelBuffer[i] = 0x000000; // Pitch Black pixel
             		}
        		}
        		

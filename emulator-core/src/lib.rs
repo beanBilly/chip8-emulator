@@ -1,3 +1,5 @@
+use wasm_bindgen::prelude::*;
+
 const fontSetSize: usize = 80;
 
 const fontSet: [u8;fontSetSize] = [
@@ -19,20 +21,24 @@ const fontSet: [u8;fontSetSize] = [
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 ];
 
+#[wasm_bindgen]
 pub struct Chip8{
-	pub ram: [u8;4096],
-	pub generalPurposeRegister: [u8;16],
+	// use set array as private as js cant access em as arrays but vectors
+	ram: [u8;4096],
+	generalPurposeRegister: [u8;16],
 	pub addressIndexRegister: u16,
 	pub programCounter: u16,
-	pub stack: [u16;16],
+	stack: [u16;16],
 	pub stackPoint: u8,
 	pub delayTimer: u8,
 	pub soundTimer: u8,
-	pub display: [bool;2048], // 64x32 screen resolution
-	pub key: [bool;16]	
+	display: [bool;2048], // 64x32 screen resolution
+	key: [bool;16]	
 }
 
+#[wasm_bindgen]
 impl Chip8{
+	#[wasm_bindgen(constructor)]
 	pub fn new()->Self{
 		let mut newRam= [0;4096];
 		
@@ -324,12 +330,22 @@ impl Chip8{
 					self.addressIndexRegister += (x + 1) as u16;
 				}
 			}
-			_ => {} // Fallback for unimplemented outer opcodes
+			_ => {} // fallback for unimplemented outer opcodes
 		}
 	}
 	
 	pub fn updateTimer(&mut self) {
     		if self.delayTimer > 0 { self.delayTimer -= 1; }
     		if self.soundTimer > 0 { self.soundTimer -= 1; }
+	}
+	
+	pub fn getDisplay(&self)->Vec<u8>{
+		self.display.iter().map(|&pixel| if pixel {1} else {0}).collect()
+	}
+	
+	pub fn setKey(&mut self, index: usize, isPressed:bool){
+		if index <16{
+			self.key[index]=isPressed;
+		}
 	}
 }
