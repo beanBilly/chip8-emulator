@@ -21,18 +21,19 @@ fn main(){
 	  //creating chip emulator here
 	  let mut emulator = Chip8::new();
 	  
-	  //given permission for compiler to read the hard drive, we are trying to read the file "pong.ch8") to load into the ROM
+	  //given permission for compiler to read the hard drive, we are trying to read the file "pong.ch8" to load into the ROM
 	  let mut romFile = File::open("pong.ch8").expect("Failed to open ROM files");
 	  //we using vector to load the game files dynamically to avoid wasting memory
 	  let mut romData = Vec::new();
 	  //read file to ROM
 	  romFile.read_to_end(&mut romData).expect("Unable to load data to ROM");
 
-/*	  	  
+/*  	  
 let romData: Vec<u8> = vec![
 
 ];
 */
+
 	  //loading ROM data to RAM
 	  emulator.loadRom(&romData);
 	  
