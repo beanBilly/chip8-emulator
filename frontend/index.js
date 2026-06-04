@@ -1,4 +1,4 @@
-import init, { Chip8 } from '/emulator-core/pkg/emulator_core.js';
+import init, { Chip8 } from '../emulator-core/pkg/emulator_core.js';
 
 const canvas = document.getElementById('chip8-canvas');
 const ctx = canvas.getContext('2d');
